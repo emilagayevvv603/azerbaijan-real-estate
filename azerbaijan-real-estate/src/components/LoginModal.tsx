@@ -24,6 +24,11 @@ export default function LoginModal({ lang, onClose, onLoginSuccess }: LoginModal
   const [step, setStep] = useState(1); // For phone OTP flow: 1=send, 2=verify
   const [error, setError] = useState("");
 
+  const [showGoogleChooser, setShowGoogleChooser] = useState(false);
+  const [customGoogleEmail, setCustomGoogleEmail] = useState("");
+  const [customGoogleName, setCustomGoogleName] = useState("");
+  const [showCustomGoogleForm, setShowCustomGoogleForm] = useState(false);
+
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -146,14 +151,14 @@ export default function LoginModal({ lang, onClose, onLoginSuccess }: LoginModal
     }
   };
 
-  const handleProviderSignIn = async (provider: "google" | "apple") => {
+  const handleProviderSignIn = async (provider: "google" | "apple", selectedEmail?: string, selectedName?: string) => {
     setLoading(true);
     setError("");
     try {
       const res = await fetch(getApiUrl("/api/auth/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ provider }),
+        body: JSON.stringify({ provider, email: selectedEmail, fullName: selectedName }),
       });
       const data = await res.json();
       if (res.ok && data.token) {
@@ -223,32 +228,6 @@ export default function LoginModal({ lang, onClose, onLoginSuccess }: LoginModal
             </h3>
           </div>
 
-          {/* Tab Selector */}
-          {authMode !== "forgot" && (
-            <div className="flex border-b border-gray-100 mb-6">
-              <button
-                onClick={() => { setAuthMode("email"); setError(""); setSuccess(""); }}
-                className={`flex-1 pb-3 text-sm font-bold border-b-2 transition ${
-                  authMode === "email"
-                    ? "border-brand-red text-brand-red"
-                    : "border-transparent text-gray-400 hover:text-gray-600"
-                }`}
-              >
-                {t.emailLoginLabel}
-              </button>
-              <button
-                onClick={() => { setAuthMode("phone"); setStep(1); setError(""); setSuccess(""); }}
-                className={`flex-1 pb-3 text-sm font-bold border-b-2 transition ${
-                  authMode === "phone"
-                    ? "border-brand-red text-brand-red"
-                    : "border-transparent text-gray-400 hover:text-gray-600"
-                }`}
-              >
-                {t.phoneLoginLabel}
-              </button>
-            </div>
-          )}
-
           {/* Feedback Messages */}
           {error && (
             <div className="mb-4 p-3 bg-red-50 border-l-4 border-brand-red text-brand-red text-xs font-bold rounded-r">
@@ -260,6 +239,169 @@ export default function LoginModal({ lang, onClose, onLoginSuccess }: LoginModal
               {success}
             </div>
           )}
+
+          {showGoogleChooser ? (
+            <div className="space-y-6">
+              <div className="flex flex-col items-center text-center">
+                <img
+                  src="https://www.svgrepo.com/show/475656/google-color.svg"
+                  className="h-10 w-10 mb-2 animate-pulse"
+                  alt="Google"
+                />
+                <h4 className="text-lg font-bold text-gray-800">
+                  {lang === "az" ? "Google ilə daxil olun" : lang === "en" ? "Sign in with Google" : "Войти через Google"}
+                </h4>
+                <p className="text-xs text-gray-500 mt-1 max-w-xs">
+                  {lang === "az" ? "MYDOM.AZ tətbiqinə keçid etmək üçün hesab seçin" : lang === "en" ? "Choose an account to continue to MYDOM.AZ" : "Выберите аккаунт для входа в MYDOM.AZ"}
+                </p>
+              </div>
+
+              {showCustomGoogleForm ? (
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!customGoogleEmail || !customGoogleName) {
+                    setError(lang === "az" ? "Zəhmət olmasa bütün sahələri doldurun" : "Please fill in all fields");
+                    return;
+                  }
+                  handleProviderSignIn("google", customGoogleEmail, customGoogleName);
+                }} className="space-y-4 pt-2">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">{lang === "az" ? "E-poçt ünvanınız" : "Email address"}</label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="example@gmail.com"
+                      value={customGoogleEmail}
+                      onChange={(e) => setCustomGoogleEmail(e.target.value)}
+                      className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl text-sm font-semibold focus:outline-none focus:border-brand-red focus:bg-white transition"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">{lang === "az" ? "Adınız və Soyadınız" : "Your Full Name"}</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Elcan Əlizadə"
+                      value={customGoogleName}
+                      onChange={(e) => setCustomGoogleName(e.target.value)}
+                      className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl text-sm font-semibold focus:outline-none focus:border-brand-red focus:bg-white transition"
+                    />
+                  </div>
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowCustomGoogleForm(false)}
+                      className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-bold transition"
+                    >
+                      {lang === "az" ? "Geri" : "Back"}
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="flex-1 py-3 bg-brand-red hover:bg-red-700 text-white rounded-xl text-sm font-bold shadow-md transition"
+                    >
+                      {loading ? (lang === "az" ? "Yüklənir..." : "Loading...") : (lang === "az" ? "Daxil ol" : "Sign In")}
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div className="space-y-2.5">
+                  {/* Option 1: Admin Account */}
+                  <button
+                    type="button"
+                    onClick={() => handleProviderSignIn("google", "eljanalizada2@gmail.com", "Elcan Əlizadə")}
+                    className="w-full p-3.5 border border-gray-200 hover:bg-gray-50 rounded-2xl flex items-center justify-between text-left transition group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-brand-red/10 text-brand-red flex items-center justify-center font-extrabold text-sm">
+                        E
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-gray-800 group-hover:text-brand-red transition">Elcan Əlizadə</div>
+                        <div className="text-xs text-gray-400">eljanalizada2@gmail.com</div>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold text-brand-red bg-red-50 px-2 py-0.5 rounded-full uppercase">
+                      Admin
+                    </span>
+                  </button>
+
+                  {/* Option 2: Guest Account */}
+                  <button
+                    type="button"
+                    onClick={() => handleProviderSignIn("google", "client-user@mydom.az", "Müştəri Qonaq")}
+                    className="w-full p-3.5 border border-gray-200 hover:bg-gray-50 rounded-2xl flex items-center justify-between text-left transition group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center font-extrabold text-sm">
+                        Q
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-gray-800 group-hover:text-brand-red transition">Müştəri Qonaq</div>
+                        <div className="text-xs text-gray-400">client-user@mydom.az</div>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full uppercase">
+                      Müştəri
+                    </span>
+                  </button>
+
+                  {/* Option 3: Use custom account */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCustomGoogleEmail("");
+                      setCustomGoogleName("");
+                      setShowCustomGoogleForm(true);
+                    }}
+                    className="w-full p-3.5 border border-dashed border-gray-300 hover:border-brand-red hover:bg-red-50/10 rounded-2xl flex items-center gap-3 text-left transition"
+                  >
+                    <div className="w-9 h-9 rounded-full border border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-lg font-bold">
+                      +
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-gray-700">{lang === "az" ? "Başqa hesab istifadə et" : "Use another account"}</div>
+                      <div className="text-xs text-gray-400">{lang === "az" ? "İstədiyiniz Gmail ünvanı ilə daxil olun" : "Login with any custom Gmail address"}</div>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowGoogleChooser(false)}
+                    className="w-full py-2.5 mt-4 text-xs font-bold text-gray-400 hover:text-gray-650 transition text-center"
+                  >
+                    {lang === "az" ? "Ləğv et" : "Cancel"}
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              {/* Tab Selector */}
+              {authMode !== "forgot" && (
+                <div className="flex border-b border-gray-100 mb-6">
+                  <button
+                    onClick={() => { setAuthMode("email"); setError(""); setSuccess(""); }}
+                    className={`flex-1 pb-3 text-sm font-bold border-b-2 transition ${
+                      authMode === "email"
+                        ? "border-brand-red text-brand-red"
+                        : "border-transparent text-gray-400 hover:text-gray-600"
+                    }`}
+                  >
+                    {t.emailLoginLabel}
+                  </button>
+                  <button
+                    onClick={() => { setAuthMode("phone"); setStep(1); setError(""); setSuccess(""); }}
+                    className={`flex-1 pb-3 text-sm font-bold border-b-2 transition ${
+                      authMode === "phone"
+                        ? "border-brand-red text-brand-red"
+                        : "border-transparent text-gray-400 hover:text-gray-600"
+                    }`}
+                  >
+                    {t.phoneLoginLabel}
+                  </button>
+                </div>
+              )}
 
           {/* EMAIL MODE */}
           {authMode === "email" && (
@@ -605,7 +747,7 @@ export default function LoginModal({ lang, onClose, onLoginSuccess }: LoginModal
 
               <button
                 type="button"
-                onClick={() => handleProviderSignIn("google")}
+                onClick={() => { setShowGoogleChooser(true); setError(""); setSuccess(""); }}
                 className="w-full py-3 border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl text-sm font-bold flex items-center justify-center gap-2.5 transition cursor-pointer"
               >
                 <img
@@ -623,6 +765,8 @@ export default function LoginModal({ lang, onClose, onLoginSuccess }: LoginModal
               </div>
             </div>
           )}
+        </>
+      )}
 
         </div>
       </motion.div>

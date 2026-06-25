@@ -556,21 +556,22 @@ const activeOTPs = new Map<string, string>();
 
 // 7. Simulated Authenticators & recovery options
 app.post("/api/auth/login", (req, res) => {
-  const { email, password, provider, phone } = req.body;
+  const { email, password, provider, phone, fullName } = req.body;
 
   // Google / Apple Mock Sign in
   if (provider === "google" || provider === "apple") {
     const isGoogle = provider === "google";
-    const email = isGoogle ? "eljanalizada2@gmail.com" : `${provider}-user@mydom.az`;
-    const fullName = isGoogle ? "Elcan Əlizadə" : "Apple Verified Client";
-    const role = isGoogle ? "admin" : "user";
+    const providerEmail = email ? email.toLowerCase().trim() : (isGoogle ? "eljanalizada2@gmail.com" : `${provider}-user@mydom.az`);
+    const isOwner = providerEmail === "eljanalizada2@gmail.com";
+    const providerName = fullName || (isOwner ? "Elcan Əlizadə" : (isGoogle ? "Google User" : "Apple Verified Client"));
+    const role = isOwner ? "admin" : "user";
 
-    let mockUser = db.users.find(u => u.email === email);
+    let mockUser = db.users.find(u => u.email === providerEmail);
     if (!mockUser) {
       mockUser = {
-        id: isGoogle ? "admin-owner" : `user-${Date.now()}`,
-        email,
-        fullName,
+        id: isOwner ? "admin-owner" : `user-${Date.now()}`,
+        email: providerEmail,
+        fullName: providerName,
         role,
         isPhoneVerified: isGoogle ? true : false,
         favorites: [],
@@ -579,7 +580,7 @@ app.post("/api/auth/login", (req, res) => {
       db.users.push(mockUser);
       saveDb(db);
     } else {
-      if (email === "eljanalizada2@gmail.com") {
+      if (isOwner) {
         mockUser.role = "admin";
         mockUser.fullName = "Elcan Əlizadə";
         saveDb(db);

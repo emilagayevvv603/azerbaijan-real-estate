@@ -7,6 +7,7 @@ import LoginModal from "./components/LoginModal";
 import PaymentModal from "./components/PaymentModal";
 import PropertyDetailsModal from "./components/PropertyDetailsModal";
 import AgencyDashboard from "./components/AgencyDashboard";
+import AdminPanel from "./components/AdminPanel";
 import AnimatedSelect from "./components/AnimatedSelect";
 import OAuthConsent from "./components/OAuthConsent";
 import { getApiUrl } from "./utils/api";
@@ -753,6 +754,17 @@ export default function App() {
               properties={[]} // Only ticketing
               onPropertyCreated={() => {}}
               onOpenBoost={() => {}}
+            />
+          </section>
+        )}
+
+        {/* TAB 6: ADMIN CONTROL PANEL */}
+        {activeTab === "admin" && user && user.role === "admin" && (
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <AdminPanel
+              lang={lang}
+              listings={listings}
+              onRefreshListings={fetchListings}
             />
           </section>
         )}
