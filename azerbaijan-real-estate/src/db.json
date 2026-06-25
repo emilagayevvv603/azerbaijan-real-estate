@@ -1,0 +1,196 @@
+{
+  "properties": [
+    {
+      "id": "prop-1",
+      "title": {
+        "az": "Port Baku Towers yaxınlığında dəniz mənzərəli 3 otaqlı premium mənzil",
+        "en": "Premium 3-room sea-view apartment near Port Baku Towers",
+        "ru": "Премиальная 3-комнатная квартира с видом на море возле Port Baku Towers"
+      },
+      "description": {
+        "az": "Port Baku elit yaşayış kompleksində dənizə gözəl panoraması olan tam təmirli mənzil. Smart-home sistemi, 24/7 mühafizə, yeraltı qaraj mövcuddur.",
+        "en": "Fully furnished apartment in Port Baku elite residential complex with amazing sea panorama. Smart-home system, 24/7 security, underground parking.",
+        "ru": "Полностью меблированная квартира в элитном жилом комплексе Порт Баку с панорамой моря. Система умный дом, круглосуточная охрана, паркинг."
+      },
+      "price": 4500,
+      "currency": "AZN",
+      "type": "rent",
+      "rentInterval": "monthly",
+      "city": "baku",
+      "address": "Neftçilər Prospekti, Səbail, Bakı",
+      "propertyType": "apartment_new",
+      "bedrooms": 2,
+      "bathrooms": 2,
+      "area": 145,
+      "images": [
+        "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80"
+      ],
+      "videoUrl": "",
+      "agentId": "agent-1",
+      "agentName": "Elşən Əlizadə (MyDom Premium)",
+      "agentPhone": "+994 50 123 45 67",
+      "agentEmail": "eljan@mydom.az",
+      "isBoosted": true,
+      "boostExpiresAt": "2026-07-01T16:51:56.947Z",
+      "views": 1240,
+      "leads": 85,
+      "createdAt": "2026-06-21T16:51:56.947Z"
+    },
+    {
+      "id": "prop-2",
+      "title": {
+        "az": "Şüvəlanda möhtəşəm hovuzlu villa — bağ evi satılır",
+        "en": "Gorgeous villa with a private pool in Shuvelan for sale",
+        "ru": "Продается великолепная вилла с бассейном в Шувелянах"
+      },
+      "description": {
+        "az": "Şüvəlan qəsəbəsində, mərkəzi yola yaxın, modern üslubda tikilmiş 2 mərtəbəli villa satılır. Geniş hovuz, dekorativ ağaclar, filterli su sistemi.",
+        "en": "Modern-styled 2-story villa for sale in Shuvelan. Large swimming pool, landscaped garden with decorative trees, high-quality filtered water system.",
+        "ru": "Продается 2-этажная вилла в современном стиле в Шувелянах. Большой бассейн, ландшафтный дизайн, система фильтрации воды."
+      },
+      "price": 385000,
+      "currency": "AZN",
+      "type": "sell",
+      "city": "baku",
+      "address": "Mayak küçəsi, Şüvəlan qəsəbəsi, Bakı",
+      "propertyType": "villa",
+      "bedrooms": 4,
+      "bathrooms": 3,
+      "area": 320,
+      "images": [
+        "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=800&q=80"
+      ],
+      "videoUrl": "",
+      "agentId": "agent-1",
+      "agentName": "Elşən Əlizadə (MyDom Premium)",
+      "agentPhone": "+994 50 123 45 67",
+      "agentEmail": "eljan@mydom.az",
+      "isBoosted": true,
+      "boostExpiresAt": "2026-06-29T16:51:56.947Z",
+      "views": 940,
+      "leads": 32,
+      "createdAt": "2026-06-19T16:51:56.947Z"
+    },
+    {
+      "id": "prop-3",
+      "title": {
+        "az": "Günlük / Saatlıq kirayə: Sumqayıt Bulvarı yaxınlığında 2 otaqlı modern ev",
+        "en": "Daily / Hourly rent: Modern 2-room home near Sumgayit Boulevard",
+        "ru": "Посуточная и почасовая аренда: 2-комн. квартира возле Сумгаитского Бульвара"
+      },
+      "description": {
+        "az": "Sumqayıt şəhərinin ən prestijli yerində, Bulvarın yaxınlığında günlük və saatlıq kirayə mənzil. Kondisioner, sürətli Wi-Fi, təmiz yataq dəsti ilə təmin olunur.",
+        "en": "Located in the most prestigious area of Sumgayit near the Boulevard. Perfect for daily or hourly rentals. Fully air-conditioned, high-speed Wi-Fi.",
+        "ru": "Расположена в самом престижном районе Сумгаита возле Бульвара. Отлично подходит для посуточной/почасовой аренды. Кондиционер, Wi-Fi."
+      },
+      "price": 45,
+      "currency": "AZN",
+      "type": "rent",
+      "rentInterval": "daily",
+      "city": "sumqayit",
+      "address": "Sülh küçəsi, Bulvar yanı, Sumqayıt",
+      "propertyType": "apartment_new",
+      "bedrooms": 1,
+      "bathrooms": 1,
+      "area": 65,
+      "images": [
+        "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80"
+      ],
+      "videoUrl": "",
+      "agentId": "agent-2",
+      "agentName": "Nigar Hüseynova (MyDom Sumqayıt)",
+      "agentPhone": "+994 70 987 65 43",
+      "agentEmail": "nigar@mydom.az",
+      "isBoosted": false,
+      "views": 450,
+      "leads": 18,
+      "createdAt": "2026-06-23T16:51:56.947Z"
+    },
+    {
+      "id": "prop-4",
+      "title": {
+        "az": "Şuşa şəhərində yeni tikilmiş otel tipli kottec barter olunur",
+        "en": "Newly built hotel-style cottage in Shusha city for exchange (barter)",
+        "ru": "Обмен нового гостиничного коттеджа в городе Шуша"
+      },
+      "description": {
+        "az": "Şuşa şəhərində dağ mənzərəli, ekoloji təmiz ərazidə yerləşən kottec satılır və ya Bakıda mənzillə dəyişdirilir (barter/exchange).",
+        "en": "Cottage with majestic mountain views in Shusha. Available for sale or exchange (barter) with apartments in Baku city.",
+        "ru": "Коттедж с панорамным горным видом в Шуше. Продается или обменивается на недвижимость в Баку."
+      },
+      "price": 180000,
+      "currency": "AZN",
+      "type": "exchange",
+      "city": "shusha",
+      "address": "Pənahəli Xan küçəsi, Şuşa",
+      "propertyType": "villa",
+      "bedrooms": 3,
+      "bathrooms": 2,
+      "area": 110,
+      "images": [
+        "https://images.unsplash.com/photo-1507089947368-19c1da9775ae?auto=format&fit=crop&w=800&q=80"
+      ],
+      "videoUrl": "",
+      "agentId": "agent-3",
+      "agentName": "Şuşa Qarabağ Emlak",
+      "agentPhone": "+994 55 555 44 33",
+      "agentEmail": "shusha@mydom.az",
+      "isBoosted": false,
+      "views": 311,
+      "leads": 14,
+      "createdAt": "2026-06-14T16:51:56.947Z"
+    },
+    {
+      "id": "prop-5",
+      "title": {
+        "az": "Gəncə şəhərində geniş kommersiya mağazası aylıq kirayə",
+        "en": "Spacious commercial storefront in Ganja for monthly rent",
+        "ru": "Просторное коммерческое помещение в Гяндже на месячную аренду"
+      },
+      "description": {
+        "az": "Gəncə şəhərinin mərkəzində, gediş-gəlişli prospektdə yerləşən vitrin şüşəli mağaza/kommersiya obyekti. Bank, şou-rum və ya kafe üçün yararlıdır.",
+        "en": "High-traffic commercial storefront located in Ganja city center. Perfect for a bank branch, showroom, or stylish cafe.",
+        "ru": "Коммерческое помещение на оживленном проспекте в центре Гянджи. Идеально под банк, шоурум или кафе."
+      },
+      "price": 3200,
+      "currency": "AZN",
+      "type": "rent",
+      "rentInterval": "monthly",
+      "city": "ganja",
+      "address": "Atatürk Prospekti, Gəncə",
+      "propertyType": "commercial",
+      "bedrooms": 0,
+      "bathrooms": 1,
+      "area": 180,
+      "images": [
+        "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80"
+      ],
+      "videoUrl": "",
+      "agentId": "agent-2",
+      "agentName": "Nigar Hüseynova (MyDom Ganja)",
+      "agentPhone": "+994 70 987 65 43",
+      "agentEmail": "nigar@mydom.az",
+      "isBoosted": false,
+      "views": 180,
+      "leads": 8,
+      "createdAt": "2026-06-20T16:51:56.947Z"
+    }
+  ],
+  "users": [
+    {
+      "id": "agent-1",
+      "email": "eljan@mydom.az",
+      "phone": "+994 50 123 45 67",
+      "fullName": "Elşən Əlizadə",
+      "role": "agent",
+      "isPhoneVerified": true,
+      "favorites": [
+        "prop-3"
+      ],
+      "viewHistory": []
+    }
+  ],
+  "tickets": []
+}

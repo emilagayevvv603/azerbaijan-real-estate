@@ -1,0 +1,6 @@
+{
+  "name": "MYDOM Azerbaijan Real Estate",
+  "description": "Ultra-professional property platform in Azerbaijan with advanced filtering, rent/buy options, agency dashboards, analytics, support tickets, and billing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
