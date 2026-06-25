@@ -14,8 +14,8 @@ export const getApiUrl = (path: string): string => {
     return path;
   }
 
-  // Fallback to the stable Shared App URL on Cloud Run
-  const apiBase = import.meta.env.VITE_API_URL || "https://ais-pre-52snpcld7mooxo6as2n3qe-978387105799.europe-west2.run.app";
+  // Fallback to the stable Shared App URL on Cloud Run or Render
+  const apiBase = import.meta.env.VITE_API_URL || "https://azerbaijan-real-estate.onrender.com";
   const base = apiBase.endsWith("/") ? apiBase.slice(0, -1) : apiBase;
   const cleanPath = path.startsWith("/") ? path : `/${path}`;
   
@@ -35,7 +35,7 @@ export const setupGlobalFetchInterceptor = () => {
 
   const originalFetch = window.fetch;
   const DEV_BASE = "https://ais-dev-52snpcld7mooxo6as2n3qe-978387105799.europe-west2.run.app";
-  const PRE_BASE = "https://ais-pre-52snpcld7mooxo6as2n3qe-978387105799.europe-west2.run.app";
+  const PRE_BASE = "https://azerbaijan-real-estate.onrender.com";
 
   const customFetch = async function (this: any, input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
     const isLocalOrPreview =
