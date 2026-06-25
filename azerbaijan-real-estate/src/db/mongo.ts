@@ -90,6 +90,6 @@ export async function connectMongoDB() {
     return true;
   } catch (err) {
     console.error("MongoDB Atlas connection failed:", err);
-    return false;
+    throw err;
   }
 }

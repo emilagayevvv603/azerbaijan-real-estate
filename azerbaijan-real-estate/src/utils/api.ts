@@ -7,7 +7,8 @@ export const getApiUrl = (path: string): string => {
   const isLocalOrPreview =
     window.location.hostname === "localhost" ||
     window.location.hostname === "127.0.0.1" ||
-    window.location.hostname.endsWith(".run.app");
+    window.location.hostname.endsWith(".run.app") ||
+    window.location.hostname.endsWith(".onrender.com");
 
   if (isLocalOrPreview) {
     return path;
@@ -40,7 +41,8 @@ export const setupGlobalFetchInterceptor = () => {
     const isLocalOrPreview =
       window.location.hostname === "localhost" ||
       window.location.hostname === "127.0.0.1" ||
-      window.location.hostname.endsWith(".run.app");
+      window.location.hostname.endsWith(".run.app") ||
+      window.location.hostname.endsWith(".onrender.com");
 
     // On local/preview, proceed with normal behavior (relative paths or standard routing)
     if (isLocalOrPreview) {

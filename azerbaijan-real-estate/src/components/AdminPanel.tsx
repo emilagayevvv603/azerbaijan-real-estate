@@ -5,7 +5,8 @@ import { getApiUrl } from "../utils/api";
 import { 
   ShieldAlert, Lock, ArrowRight, Eye, Phone, Trash2, 
   Check, X, Sparkles, RefreshCw, BarChart2, Users, 
-  MessageSquare, Settings, Edit3, Heart, Building2 
+  MessageSquare, Settings, Edit3, Heart, Building2,
+  Database, AlertTriangle, HelpCircle
 } from "lucide-react";
 
 interface AdminPanelProps {
@@ -26,6 +27,10 @@ export default function AdminPanel({ lang, listings, onRefreshListings }: AdminP
   const [usersList, setUsersList] = useState<User[]>([]);
   const [ticketsList, setTicketsList] = useState<SupportTicket[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // MongoDB status state
+  const [mongoStatus, setMongoStatus] = useState<any>(null);
+  const [syncingMongo, setSyncingMongo] = useState(false);
 
   // Inline edit listing modal state
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
@@ -53,6 +58,8 @@ export default function AdminPanel({ lang, listings, onRefreshListings }: AdminP
     try {
       const usersRes = await fetch(getApiUrl("/api/admin/users"));
       const ticketsRes = await fetch(getApiUrl("/api/tickets"));
+      const diagnosticsRes = await fetch(getApiUrl("/api/diagnostics"));
+
       if (usersRes.ok) {
         const uData = await usersRes.json();
         setUsersList(uData);
@@ -61,10 +68,37 @@ export default function AdminPanel({ lang, listings, onRefreshListings }: AdminP
         const tData = await ticketsRes.json();
         setTicketsList(tData);
       }
+      if (diagnosticsRes.ok) {
+        const diagData = await diagnosticsRes.json();
+        setMongoStatus(diagData.mongodb);
+      }
     } catch (err) {
       console.error("Failed to fetch admin data", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleMongoSync = async () => {
+    setSyncingMongo(true);
+    try {
+      const res = await fetch(getApiUrl("/api/admin/mongo-sync"), {
+        method: "POST"
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMongoStatus({
+          connected: data.connected,
+          isActive: data.isActive,
+          lastSyncTime: data.lastSyncTime,
+          error: data.error
+        });
+        onRefreshListings();
+      }
+    } catch (err) {
+      console.error("Failed to trigger MongoDB manual sync:", err);
+    } finally {
+      setSyncingMongo(false);
     }
   };
 
@@ -471,29 +505,135 @@ export default function AdminPanel({ lang, listings, onRefreshListings }: AdminP
             <div className="space-y-6">
               <div className="bg-brand-dark text-white rounded-3xl p-6 shadow-lg space-y-4">
                 <h3 className="text-sm font-extrabold tracking-wider uppercase text-red-500">
-                  Təhlükəsizlik jurnalı
+                  {lang === "az" ? "Təhlükəsizlik jurnalı" : "Security Log"}
                 </h3>
                 <div className="space-y-3 pt-2 text-xs font-semibold text-gray-300">
                   <div className="flex justify-between items-center border-b border-gray-800 pb-2">
-                    <span>Server Statusu:</span>
+                    <span>{lang === "az" ? "Server Statusu:" : "Server Status:"}</span>
                     <span className="text-emerald-400 flex items-center gap-1">
-                      <span className="h-2 w-2 bg-emerald-400 rounded-full animate-pulse" /> AKTİV
+                      <span className="h-2 w-2 bg-emerald-400 rounded-full animate-pulse" /> {lang === "az" ? "AKTİV" : "ACTIVE"}
                     </span>
                   </div>
                   <div className="flex justify-between items-center border-b border-gray-800 pb-2">
-                    <span>Verilənlər Bazası:</span>
-                    <span className="font-mono text-[10px]">db.json LOCAL FILE</span>
+                    <span>{lang === "az" ? "Verilənlər Bazası:" : "Database:"}</span>
+                    <span className="font-mono text-[10px]">
+                      {mongoStatus?.isActive ? "MONGODB CLOUD" : "db.json LOCAL FILE"}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center border-b border-gray-800 pb-2">
-                    <span>Admin Keçidi:</span>
-                    <span className="text-emerald-400">TƏSDİQLƏNDİ</span>
+                    <span>{lang === "az" ? "Admin Keçidi:" : "Admin Access:"}</span>
+                    <span className="text-emerald-400">{lang === "az" ? "TƏSDİQLƏNDİ" : "AUTHORIZED"}</span>
                   </div>
                 </div>
                 <div className="bg-white/5 p-4 rounded-2xl space-y-2">
-                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Mühüm bildiriş</h4>
+                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                    {lang === "az" ? "Mühüm bildiriş" : "Important Notice"}
+                  </h4>
                   <p className="text-[10px] text-gray-400 leading-relaxed font-medium">
-                    Sistem üzərində edilən hər bir dəyişiklik verilənlər bazasında dərhal qeyd olunur. Elanların və hesabların koordinasiyası zamanı diqqətli olmağınız xahiş olunur.
+                    {lang === "az" 
+                      ? "Sistem üzərində edilən hər bir dəyişiklik verilənlər bazasında dərhal qeyd olunur. Elanların və hesabların koordinasiyası zamanı diqqətli olmağınız xahiş olunur."
+                      : "Every action taken on this dashboard is instantly recorded. Please be cautious when updating or deleting listings, users, or tickets."}
                   </p>
+                </div>
+              </div>
+
+              {/* MongoDB Atlas Integration Diagnostics Card */}
+              <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm space-y-4">
+                <div className="flex items-center justify-between border-b border-gray-50 pb-3">
+                  <h3 className="text-sm font-extrabold text-brand-dark flex items-center gap-1.5">
+                    <Database size={16} className={mongoStatus?.isActive ? "text-emerald-500" : "text-amber-500"} />
+                    <span>MongoDB Atlas</span>
+                  </h3>
+                  <span className={`h-2.5 w-2.5 rounded-full ${mongoStatus?.isActive ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`} />
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-400 font-bold">{lang === "az" ? "Status:" : "Status:"}</span>
+                    <span className={`font-extrabold ${mongoStatus?.isActive ? "text-emerald-600" : "text-amber-600"}`}>
+                      {mongoStatus?.isActive 
+                        ? (lang === "az" ? "Qoşulub (Aktiv)" : "Connected (Active)") 
+                        : (lang === "az" ? "Qoşulmayıb (Lokal Fallback)" : "Disconnected (Local Fallback)")}
+                    </span>
+                  </div>
+
+                  {mongoStatus?.lastSyncTime && (
+                    <div className="flex justify-between text-xs border-t border-gray-50 pt-2">
+                      <span className="text-gray-400 font-bold">{lang === "az" ? "Son sinxronizasiya:" : "Last Sync:"}</span>
+                      <span className="text-gray-600 font-mono text-[10px] truncate max-w-[150px]">
+                        {new Date(mongoStatus.lastSyncTime).toLocaleTimeString()}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Connection Error Message Box */}
+                  {!mongoStatus?.isActive && mongoStatus?.error && (
+                    <div className="bg-red-50 border border-red-100 rounded-2xl p-4 space-y-1.5 animate-in fade-in zoom-in-95 duration-200">
+                      <span className="text-[10px] font-black text-brand-red uppercase tracking-wider flex items-center gap-1">
+                        <AlertTriangle size={12} /> {lang === "az" ? "BAĞLANTI XƏTASI DETALLARI:" : "CONNECTION ERROR DETAILS:"}
+                      </span>
+                      <div className="text-[10px] text-red-700 font-mono bg-white p-2.5 border border-red-100 rounded-xl overflow-x-auto max-h-36 leading-relaxed whitespace-pre-wrap break-all">
+                        {mongoStatus.error}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Sync / Reconnect Button */}
+                  <button
+                    onClick={handleMongoSync}
+                    disabled={syncingMongo}
+                    className={`w-full py-2.5 rounded-2xl text-xs font-black shadow-md flex items-center justify-center gap-1.5 transition cursor-pointer disabled:opacity-50 ${
+                      mongoStatus?.isActive 
+                        ? "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-100" 
+                        : "bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-100 shadow-amber-500/5"
+                    }`}
+                  >
+                    <RefreshCw size={12} className={syncingMongo ? "animate-spin" : ""} />
+                    <span>
+                      {syncingMongo 
+                        ? (lang === "az" ? "Yoxlanılır..." : "Checking...") 
+                        : mongoStatus?.isActive 
+                          ? (lang === "az" ? "Yenidən Sinxronizasiya et" : "Resynchronize Database") 
+                          : (lang === "az" ? "Bağlantını Yenidən Yoxla" : "Test MongoDB Connection")}
+                    </span>
+                  </button>
+
+                  {/* Troubleshooting Guide */}
+                  {!mongoStatus?.isActive && (
+                    <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100 space-y-2.5 animate-in slide-in-from-top-2 duration-300">
+                      <span className="text-[10px] font-black text-brand-dark uppercase tracking-wider flex items-center gap-1">
+                        <HelpCircle size={12} className="text-gray-400" />
+                        {lang === "az" ? "Atlas Qoşulma Problemini Həll Et:" : "How to Fix Connection Issue:"}
+                      </span>
+                      <ul className="text-[10px] text-gray-500 space-y-2 leading-relaxed pl-1.5 list-decimal font-semibold">
+                        <li>
+                          {lang === "az" 
+                            ? "MongoDB Atlas portalına (cloud.mongodb.com) daxil olun." 
+                            : "Log in to your MongoDB Atlas dashboard (cloud.mongodb.com)."}
+                        </li>
+                        <li>
+                          {lang === "az" 
+                            ? "Sol menyuda 'Network Access' (Şəbəkə Girişi) bölməsinə klikləyin." 
+                            : "Click on 'Network Access' in the left-hand sidebar."}
+                        </li>
+                        <li>
+                          {lang === "az" 
+                            ? "'Add IP Address' düyməsinə klikləyərək IP Access List-ə '0.0.0.0/0' (hər yerdən giriş) əlavə edin. (Bu, Render-in dinamik IP ünvanları üçün mütləqdir)." 
+                            : "Click 'Add IP Address' and add '0.0.0.0/0' (Allow access from anywhere). This is mandatory for Render's dynamic host IPs."}
+                        </li>
+                        <li>
+                          {lang === "az" 
+                            ? "Render idarəetmə panelində 'MONGODB_URI' (və ya 'MONGO_URI') mühit dəyişənində (Environment) verilənlər bazası şifrənizi düzgün daxil etdiyinizdən əmin olun." 
+                            : "Verify that your 'MONGODB_URI' (or 'MONGO_URI') environment variable on Render contains your correct database user password."}
+                        </li>
+                        <li>
+                          {lang === "az" 
+                            ? "Yuxarıdakı 'Bağlantını Yenidən Yoxla' düyməsinə sıxaraq real-time nəticəni yoxlayın." 
+                            : "Click the 'Test MongoDB Connection' button above to verify connection in real-time."}
+                        </li>
+                      </ul>
+                    </div>
+                  )}
                 </div>
               </div>
 

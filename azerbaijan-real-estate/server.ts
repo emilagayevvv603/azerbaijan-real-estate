@@ -8,7 +8,7 @@ import mongoose from "mongoose";
 import { connectMongoDB, MongoProperty, MongoUser, MongoTicket } from "./src/db/mongo";
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 app.use(cors());
 app.use(express.json());
@@ -381,6 +381,27 @@ app.get("/api/diagnostics", (req, res) => {
       tickets: db.tickets.length,
     }
   });
+});
+
+// Endpoint to trigger manual MongoDB database synchronization/reconnect
+app.post("/api/admin/mongo-sync", async (req, res) => {
+  try {
+    console.log("[MyDom Admin] Request received to manually trigger MongoDB sync...");
+    await syncWithMongoDB();
+    res.json({
+      success: isMongoActive,
+      connected: mongoose.connection.readyState === 1,
+      isActive: isMongoActive,
+      lastSyncTime: lastMongoSyncTime,
+      error: mongoSyncError
+    });
+  } catch (err: any) {
+    console.error("[MyDom Admin] Manual MongoDB sync trigger failed:", err);
+    res.status(500).json({
+      success: false,
+      error: err?.message || String(err)
+    });
+  }
 });
 
 // 1. Fetch Listings with Boost Ordering
