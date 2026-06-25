@@ -97,12 +97,18 @@ export default function PaymentModal({ lang, property, onClose, onSuccess }: Pay
   };
 
   return (
-    <div className="fixed inset-0 bg-black/75 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/75 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto"
+    >
       <motion.div 
-        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        initial={{ opacity: 0, scale: 0.98, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ type: "spring", stiffness: 130, damping: 18 }}
-        className="bg-white rounded-3xl border border-gray-100 shadow-2xl w-full max-w-2xl relative overflow-hidden transition-all my-8 transform"
+        exit={{ opacity: 0, scale: 0.98, y: 15 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        className="bg-white rounded-[24px] border border-gray-100 shadow-2xl w-full max-w-2xl relative overflow-hidden my-8"
       >
         
         {/* Top styling band */}
@@ -369,6 +375,6 @@ export default function PaymentModal({ lang, property, onClose, onSuccess }: Pay
         )}
 
       </motion.div>
-    </div>
+    </motion.div>
   );
 }

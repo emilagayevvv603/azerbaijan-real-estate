@@ -799,35 +799,41 @@ export default function App() {
       </footer>
 
       {/* --- OVERLAY MODALS --- */}
-      {showLogin && (
-        <LoginModal
-          lang={lang}
-          onClose={() => setShowLogin(false)}
-          onLoginSuccess={handleLoginSuccess}
-        />
-      )}
+      <AnimatePresence>
+        {showLogin && (
+          <LoginModal
+            lang={lang}
+            onClose={() => setShowLogin(false)}
+            onLoginSuccess={handleLoginSuccess}
+          />
+        )}
+      </AnimatePresence>
 
-      {showPayment && (
-        <PaymentModal
-          lang={lang}
-          property={showPayment}
-          onClose={() => setShowPayment(null)}
-          onSuccess={(expires) => {
-            fetchListings(); // reload listings to update boosted priorities
-            setShowPayment(null);
-          }}
-        />
-      )}
+      <AnimatePresence>
+        {showPayment && (
+          <PaymentModal
+            lang={lang}
+            property={showPayment}
+            onClose={() => setShowPayment(null)}
+            onSuccess={(expires) => {
+              fetchListings(); // reload listings to update boosted priorities
+              setShowPayment(null);
+            }}
+          />
+        )}
+      </AnimatePresence>
 
-      {showDetails && (
-        <PropertyDetailsModal
-          lang={lang}
-          property={showDetails}
-          user={user}
-          onClose={() => setShowDetails(null)}
-          onToggleFavorite={handleToggleFavorite}
-        />
-      )}
+      <AnimatePresence>
+        {showDetails && (
+          <PropertyDetailsModal
+            lang={lang}
+            property={showDetails}
+            user={user}
+            onClose={() => setShowDetails(null)}
+            onToggleFavorite={handleToggleFavorite}
+          />
+        )}
+      </AnimatePresence>
 
     </div>
   );

@@ -552,18 +552,111 @@ app.post(["/oauth/token", "/api/oauth/token"], (req, res) => {
 });
 
 // Active OTP storage for verification
-const activeOTPs = new Map<string, string>();
+const activeOTPs = new Map<string, { otp: string; expiresAt: number; isEmail: boolean }>();
+
+// Universal OTP Sender
+app.post("/api/auth/send-otp", (req, res) => {
+  const { identifier } = req.body;
+  if (!identifier) {
+    return res.status(400).json({ error: "E-poçt və ya nömrə tələb olunur." });
+  }
+
+  const isEmail = identifier.includes("@");
+  const cleanIdentifier = isEmail ? identifier.toLowerCase().trim() : identifier.replace(/\s+/g, "");
+  
+  const generatedOTP = String(Math.floor(100000 + Math.random() * 900000));
+  
+  activeOTPs.set(cleanIdentifier, {
+    otp: generatedOTP,
+    expiresAt: Date.now() + 10 * 60 * 1000,
+    isEmail
+  });
+
+  console.log(`[Auth Gateway] Sent OTP ${generatedOTP} to ${cleanIdentifier}`);
+  
+  return res.json({
+    success: true,
+    message: isEmail ? `OTP kodu e-poçtunuza göndərildi` : `OTP kodu nömrənizə göndərildi`,
+    otpForTesting: generatedOTP
+  });
+});
+
+// Universal OTP Verifier
+app.post("/api/auth/verify-otp", (req, res) => {
+  const { identifier, code, fullName } = req.body;
+  if (!identifier || !code) {
+    return res.status(400).json({ error: "İdentifikator və kod tələb olunur." });
+  }
+
+  const isEmail = identifier.includes("@");
+  const cleanIdentifier = isEmail ? identifier.toLowerCase().trim() : identifier.replace(/\s+/g, "");
+  
+  const session = activeOTPs.get(cleanIdentifier);
+  
+  if (!session) {
+    return res.status(400).json({ error: "Kodun müddəti bitib və ya tapılmadı. Yenidən cəhd edin." });
+  }
+  
+  if (session.expiresAt < Date.now()) {
+    activeOTPs.delete(cleanIdentifier);
+    return res.status(400).json({ error: "Kodun müddəti bitib. Yenidən cəhd edin." });
+  }
+
+  if (session.otp !== code && code !== "1918") {
+    return res.status(400).json({ error: "Yanlış kod daxil edildi." });
+  }
+
+  // OTP is valid. Now log in or register.
+  activeOTPs.delete(cleanIdentifier);
+
+  let user = db.users.find(u => 
+    (isEmail && u.email === cleanIdentifier) || 
+    (!isEmail && u.phone === cleanIdentifier)
+  );
+
+  const isOwner = cleanIdentifier === "eljanalizada2@gmail.com";
+
+  if (!user) {
+    // Auto-register
+    user = {
+      id: isOwner ? "admin-owner" : `user-${Date.now()}`,
+      email: isEmail ? cleanIdentifier : `${cleanIdentifier}@temp.mydom.az`,
+      phone: isEmail ? undefined : cleanIdentifier,
+      fullName: isOwner ? "Elcan Əlizadə" : (fullName || "Yeni İstifadəçi"),
+      role: isOwner ? "admin" : "user",
+      isPhoneVerified: !isEmail,
+      isEmailVerified: isEmail,
+      favorites: [],
+      viewHistory: []
+    };
+    db.users.push(user);
+  } else {
+    if (isOwner) {
+      user.role = "admin";
+    }
+    if (fullName) {
+      user.fullName = fullName;
+    }
+  }
+
+  saveDb(db);
+
+  return res.json({
+    success: true,
+    token: `token-${user.id}`,
+    user
+  });
+});
 
 // 7. Simulated Authenticators & recovery options
 app.post("/api/auth/login", (req, res) => {
-  const { email, password, provider, phone, fullName } = req.body;
+  const { email, provider, fullName } = req.body;
 
-  // Google / Apple Mock Sign in
-  if (provider === "google" || provider === "apple") {
-    const isGoogle = provider === "google";
-    const providerEmail = email ? email.toLowerCase().trim() : (isGoogle ? "eljanalizada2@gmail.com" : `${provider}-user@mydom.az`);
+  // Google Mock Sign in
+  if (provider === "google") {
+    const providerEmail = email ? email.toLowerCase().trim() : "eljanalizada2@gmail.com";
     const isOwner = providerEmail === "eljanalizada2@gmail.com";
-    const providerName = fullName || (isOwner ? "Elcan Əlizadə" : (isGoogle ? "Google User" : "Apple Verified Client"));
+    const providerName = fullName || (isOwner ? "Elcan Əlizadə" : "Google User");
     const role = isOwner ? "admin" : "user";
 
     let mockUser = db.users.find(u => u.email === providerEmail);
@@ -573,7 +666,7 @@ app.post("/api/auth/login", (req, res) => {
         email: providerEmail,
         fullName: providerName,
         role,
-        isPhoneVerified: isGoogle ? true : false,
+        isPhoneVerified: true,
         favorites: [],
         viewHistory: []
       };
@@ -583,125 +676,16 @@ app.post("/api/auth/login", (req, res) => {
       if (isOwner) {
         mockUser.role = "admin";
         mockUser.fullName = "Elcan Əlizadə";
-        saveDb(db);
       }
+      if (fullName) {
+        mockUser.fullName = fullName;
+      }
+      saveDb(db);
     }
     return res.json({ token: `token-${mockUser.id}`, user: mockUser });
   }
 
-  // Phone code verification trigger
-  if (phone && !email) {
-    const cleanPhone = phone.replace(/\s+/g, "");
-    const generatedOTP = String(Math.floor(100000 + Math.random() * 900000));
-    activeOTPs.set(cleanPhone, generatedOTP);
-    console.log(`[SMS Gateway] Sent OTP ${generatedOTP} to ${phone}`);
-    return res.json({
-      success: true,
-      message: "SMS Verification code sent to phone successfully",
-      demoCode: generatedOTP
-    });
-  }
-
-  // Standard Email sign-in
-  if (!email || !password) {
-    return res.status(400).json({ error: "Email/Password required" });
-  }
-
-  const cleanEmail = email.toLowerCase().trim();
-  let foundUser = db.users.find(u => u.email === cleanEmail);
-  if (!foundUser) {
-    const isOwner = cleanEmail === "eljanalizada2@gmail.com";
-    if (isOwner) {
-      foundUser = {
-        id: "admin-owner",
-        email: cleanEmail,
-        fullName: "Elcan Əlizadə",
-        role: "admin",
-        isPhoneVerified: true,
-        favorites: [],
-        viewHistory: []
-      };
-      db.users.push(foundUser);
-      saveDb(db);
-    } else {
-      return res.status(404).json({
-        error: "Bu e-poçt ünvanı ilə istifadəçi tapılmadı. Zəhmət olmasa qeydiyyatdan keçin."
-      });
-    }
-  } else {
-    if (cleanEmail === "eljanalizada2@gmail.com") {
-      foundUser.role = "admin";
-      foundUser.fullName = "Elcan Əlizadə";
-      saveDb(db);
-    }
-  }
-
-  res.json({
-    token: `token-${foundUser.id}`,
-    user: foundUser
-  });
-});
-
-// Standard Email registration
-app.post("/api/auth/register", (req, res) => {
-  const { email, password, fullName, phone, role } = req.body;
-  if (!email || !password || !fullName) {
-    return res.status(400).json({ error: "E-poçt, şifrə və ad-soyad tələb olunur." });
-  }
-
-  const cleanEmail = email.toLowerCase().trim();
-  const existingUser = db.users.find(u => u.email === cleanEmail);
-  if (existingUser) {
-    return res.status(400).json({ error: "Bu e-poçt ünvanı ilə artıq qeydiyyatdan keçilib." });
-  }
-
-  const isOwner = cleanEmail === "eljanalizada2@gmail.com";
-  const newUser = {
-    id: isOwner ? "admin-owner" : `user-${Date.now()}`,
-    email: cleanEmail,
-    fullName: fullName.trim(),
-    phone: phone ? phone.trim() : undefined,
-    role: isOwner ? "admin" : (role || "user"),
-    isPhoneVerified: !!phone,
-    favorites: [],
-    viewHistory: []
-  };
-
-  db.users.push(newUser);
-  saveDb(db);
-
-  res.status(201).json({
-    success: true,
-    token: `token-${newUser.id}`,
-    user: newUser
-  });
-});
-
-// SMS / Email secure OTP recovery link dispatch
-app.post("/api/auth/recover", (req, res) => {
-  const { channel, target } = req.body; // channel: 'email' | 'sms'
-  if (!target) {
-    return res.status(400).json({ error: "Recovery target (email or phone) is required" });
-  }
-  res.json({
-    success: true,
-    message: `Secure password recovery link dispatched successfully via ${channel === "sms" ? "SMS" : "Email"} to ${target}.`
-  });
-});
-
-// Verification of phone code
-app.post("/api/auth/verify-phone", (req, res) => {
-  const { phone, code } = req.body;
-  const cleanPhone = phone ? phone.replace(/\s+/g, "") : "";
-  const actualOTP = activeOTPs.get(cleanPhone);
-
-  if (code !== "1918" && code !== actualOTP) {
-    return res.status(400).json({ error: "Invalid OTP verification code. Please try again." });
-  }
-  res.json({
-    success: true,
-    message: "Phone number verified successfully"
-  });
+  return res.status(400).json({ error: "Invalid provider" });
 });
 
 // 8. Bookmarks / Favorites toggler
