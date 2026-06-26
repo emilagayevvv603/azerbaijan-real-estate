@@ -865,6 +865,19 @@ app.put("/api/admin/users/:id", (req, res) => {
   res.json({ success: true, user });
 });
 
+// Admin endpoint to reset password
+app.post("/api/admin/users/:id/reset-password", (req, res) => {
+  const user = db.users.find(u => u.id === req.params.id);
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+  
+  // Simulate generating a recovery code
+  const recoveryCode = Math.floor(100000 + Math.random() * 900000).toString();
+  
+  res.json({ success: true, message: "Password reset link/code sent.", recoveryCode });
+});
+
 // Delete user
 app.delete("/api/admin/users/:id", (req, res) => {
   const idx = db.users.findIndex(u => u.id === req.params.id);

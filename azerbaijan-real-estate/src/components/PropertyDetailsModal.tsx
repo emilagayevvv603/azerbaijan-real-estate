@@ -11,6 +11,8 @@ interface PropertyDetailsModalProps {
   user: User | null;
   onClose: () => void;
   onToggleFavorite: (propertyId: string) => void;
+  onOpenBoost: (property: Property) => void;
+  isPage?: boolean;
 }
 
 export default function PropertyDetailsModal({
@@ -19,6 +21,8 @@ export default function PropertyDetailsModal({
   user,
   onClose,
   onToggleFavorite,
+  onOpenBoost,
+  isPage = false,
 }: PropertyDetailsModalProps) {
   const t = TRANSLATIONS[lang];
   const [activeImage, setActiveImage] = useState(property.images[0]);
@@ -53,16 +57,17 @@ export default function PropertyDetailsModal({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/75 backdrop-blur-md z-[100] flex items-center justify-center p-0 md:p-4"
+      className={isPage ? "min-h-screen bg-white w-full" : "fixed inset-0 z-[100] bg-white md:bg-black/75 md:backdrop-blur-md overflow-y-auto flex items-start md:items-center justify-center p-0 md:p-4"}
+      style={{ WebkitOverflowScrolling: "touch" }}
     >
       <motion.div 
         initial={{ opacity: 0, scale: 0.98, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.98, y: 15 }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className="bg-white md:rounded-[24px] border-x-0 md:border border-gray-100 shadow-2xl w-full max-w-4xl relative min-h-[100dvh] md:min-h-0 md:max-h-[90vh] flex flex-col my-0 md:my-8"
+        className={isPage ? "bg-white w-full max-w-4xl mx-auto flex flex-col min-h-screen relative" : "bg-white md:rounded-[24px] border-x-0 md:border border-gray-100 md:shadow-2xl w-full max-w-4xl relative flex flex-col my-0 md:my-8 min-h-full md:min-h-0"}
       >
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 w-full">
         {/* VIP Highlighting Band */}
         {property.isBoosted && (
           <div className="bg-gradient-to-r from-yellow-500 via-amber-600 to-yellow-400 text-white text-center py-2 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5">
@@ -274,6 +279,23 @@ export default function PropertyDetailsModal({
                   <span>{t.callBtn}</span>
                 </motion.button>
               </div>
+
+              {/* Any user can boost the listing */}
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  if (!user) {
+                    alert(lang === "az" ? "Elanı irəli çəkmək üçün daxil olmalısınız." : "You must log in to boost this listing.");
+                    return;
+                  }
+                  onOpenBoost(property);
+                }}
+                className="w-full mt-3 py-3 bg-gradient-to-r from-yellow-500 via-amber-600 to-yellow-500 hover:opacity-90 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-md cursor-pointer uppercase tracking-wider"
+              >
+                <Award size={16} />
+                <span>{lang === "az" ? "VIP / Premium Et" : "Make VIP / Premium"}</span>
+              </motion.button>
 
               {leadRegistered && (
                 <motion.div 

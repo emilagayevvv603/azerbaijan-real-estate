@@ -182,6 +182,23 @@ export default function AdminPanel({ lang, listings, onRefreshListings }: AdminP
     }
   };
 
+  const handleResetPassword = async (userId: string, email: string) => {
+    try {
+      const res = await fetch(getApiUrl(`/api/admin/users/${userId}/reset-password`), {
+        method: "POST"
+      });
+      if (res.ok) {
+        const data = await res.json();
+        alert(`Şifrə sıfırlama linki göndərildi / Recovery Code: ${data.recoveryCode}\n\nE-poçt: ${email}`);
+      } else {
+        alert("Xəta baş verdi");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Server xətası");
+    }
+  };
+
   const handleChangeUserRole = async (uId: string, currentRole: string) => {
     const targetRole = currentRole === "agent" ? "user" : "agent";
     try {
@@ -805,6 +822,13 @@ export default function AdminPanel({ lang, listings, onRefreshListings }: AdminP
                       </td>
                       <td className="py-4 px-4 text-right">
                         <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => handleResetPassword(u.id, u.email)}
+                            className="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg border border-blue-100 cursor-pointer transition"
+                            title="Şifrəni Sıfırla / Parol Bərpası"
+                          >
+                            <Lock size={14} />
+                          </button>
                           <button
                             onClick={() => handleChangeUserRole(u.id, u.role)}
                             className="px-2.5 py-1 bg-gray-50 hover:bg-gray-100 text-gray-600 text-[10px] font-extrabold rounded-lg border border-gray-100 cursor-pointer transition"

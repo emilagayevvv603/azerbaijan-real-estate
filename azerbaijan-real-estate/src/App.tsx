@@ -51,6 +51,17 @@ export default function App() {
     localStorage.setItem("mydom_lang", l);
   };
 
+  // Handle mobile back button for modal
+  useEffect(() => {
+    const handlePopState = () => {
+      if (showDetails) {
+        setShowDetails(null);
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [showDetails]);
+
   // Load listings from server
   const fetchListings = async () => {
     try {
@@ -95,7 +106,13 @@ export default function App() {
 
   // Add view trigger & register to view history on selection
   const handleSelectProperty = async (property: Property) => {
+    if (window.innerWidth < 768) {
+      window.location.href = `/property/${property.id}`;
+      return;
+    }
+    
     setShowDetails(property);
+    window.history.pushState({ modal: 'property' }, '', `#property-${property.id}`);
     
     // 1. Trigger viewed API to increment views count on the server
     try {
@@ -220,6 +237,51 @@ export default function App() {
         currentUser={user}
       />
     );
+  }
+
+  const propertyMatch = window.location.pathname.match(/^\/property\/(.+)/);
+  if (propertyMatch) {
+    if (listings.length === 0) {
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="w-8 h-8 border-4 border-brand-red border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      );
+    }
+    const propertyId = propertyMatch[1];
+    const detailProperty = listings.find(p => p.id === propertyId);
+    if (detailProperty) {
+      return (
+        <>
+          <PropertyDetailsModal
+            lang={lang}
+            property={detailProperty}
+            user={user}
+            isPage={true}
+            onClose={() => {
+              window.location.href = '/';
+            }}
+            onToggleFavorite={handleToggleFavorite}
+            onOpenBoost={(p) => {
+              setShowPayment(p);
+            }}
+          />
+          <AnimatePresence>
+            {showPayment && (
+              <PaymentModal 
+                lang={lang} 
+                property={showPayment} 
+                onClose={() => setShowPayment(null)} 
+                onSuccess={() => {
+                  fetchListings();
+                  setShowPayment(null);
+                }} 
+              />
+            )}
+          </AnimatePresence>
+        </>
+      );
+    }
   }
 
   return (
@@ -735,6 +797,7 @@ export default function App() {
           <AgencyDashboard
             lang={lang}
             token={token}
+            user={user}
             agentId={user.id}
             properties={listings.filter((p) => p.agentId === user.id)}
             onPropertyCreated={() => {
@@ -750,6 +813,7 @@ export default function App() {
             <AgencyDashboard
               lang={lang}
               token={token}
+              user={user}
               agentId={user.id}
               properties={[]} // Only ticketing
               onPropertyCreated={() => {}}
@@ -829,8 +893,17 @@ export default function App() {
             lang={lang}
             property={showDetails}
             user={user}
-            onClose={() => setShowDetails(null)}
+            onClose={() => {
+              setShowDetails(null);
+              if (window.location.hash.startsWith('#property-')) {
+                window.history.back();
+              }
+            }}
             onToggleFavorite={handleToggleFavorite}
+            onOpenBoost={(p) => {
+              setShowDetails(null);
+              setShowPayment(p);
+            }}
           />
         )}
       </AnimatePresence>

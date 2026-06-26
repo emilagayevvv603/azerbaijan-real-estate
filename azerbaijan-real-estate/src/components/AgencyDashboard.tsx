@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { TRANSLATIONS } from "../data/translations";
 import { AZERBAIJAN_CITIES } from "../data/azerbaijanCities";
-import { Property, SupportTicket } from "../types";
+import { Property, SupportTicket, User } from "../types";
 import { PlusCircle, TrendingUp, HelpCircle, Activity, MessageSquare, Plus, CheckCircle, ShieldAlert, Coins, Trash2 } from "lucide-react";
 import AnimatedSelect from "./AnimatedSelect";
 import { getApiUrl } from "../utils/api";
@@ -9,6 +9,7 @@ import { getApiUrl } from "../utils/api";
 interface AgencyDashboardProps {
   lang: "az" | "en" | "ru";
   token: string | null;
+  user: User;
   agentId: string;
   properties: Property[];
   onPropertyCreated: () => void;
@@ -18,6 +19,7 @@ interface AgencyDashboardProps {
 export default function AgencyDashboard({
   lang,
   token,
+  user,
   agentId,
   properties,
   onPropertyCreated,
@@ -315,7 +317,13 @@ export default function AgencyDashboard({
               {lang === "az" ? "Elanların Siyahısı" : "Properties List"}
             </h3>
             <button
-              onClick={() => setShowCreateForm(!showCreateForm)}
+              onClick={() => {
+                if (!user.isPhoneVerified) {
+                  alert(lang === "az" ? "Elan yerləşdirmək üçün profilinizdə nömrənizi təsdiq etməlisiniz." : "You must verify your phone number to post listings.");
+                  return;
+                }
+                setShowCreateForm(!showCreateForm);
+              }}
               className="flex items-center gap-1.5 bg-brand-red hover:bg-red-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition shadow"
             >
               <PlusCircle size={14} />

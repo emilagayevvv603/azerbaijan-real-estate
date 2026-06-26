@@ -103,7 +103,7 @@ export default function LoginModal({ lang, onClose, onLoginSuccess }: LoginModal
       const data = await res.json();
       
       if (res.ok && data.token) {
-        if (!data.user.isPhoneVerified && authMode === "register") {
+        if (!data.user.isPhoneVerified) {
           setPendingAuth({ token: data.token, user: data.user });
           setCurrentView("phone-collection");
         } else {
