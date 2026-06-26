@@ -649,6 +649,25 @@ app.post("/api/auth/verify-otp", (req, res) => {
 });
 
 // 7. Simulated Authenticators & recovery options
+// Add profile update endpoint
+app.put("/api/user/update", (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer token-")) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  const userId = authHeader.replace("Bearer token-", "");
+  const user = db.users.find(u => u.id === userId);
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+
+  if (req.body.phone !== undefined) user.phone = req.body.phone;
+  if (req.body.isPhoneVerified !== undefined) user.isPhoneVerified = req.body.isPhoneVerified;
+
+  saveDb(db);
+  res.json({ success: true, user });
+});
+
 app.post("/api/auth/login", (req, res) => {
   const { email, provider, fullName } = req.body;
 
@@ -666,7 +685,8 @@ app.post("/api/auth/login", (req, res) => {
         email: providerEmail,
         fullName: providerName,
         role,
-        isPhoneVerified: true,
+        isPhoneVerified: isOwner,
+        isEmailVerified: true,
         favorites: [],
         viewHistory: []
       };
@@ -932,6 +952,10 @@ app.post("/api/admin/tickets/:id/reply", (req, res) => {
 
   saveDb(db);
   res.json({ success: true, ticket });
+});
+
+app.get("/api/debug-env", (req, res) => {
+  res.json({ keys: Object.keys(process.env) });
 });
 
 // Load Vite middleware for asset bundling

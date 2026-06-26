@@ -53,16 +53,16 @@ export default function PropertyDetailsModal({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/75 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto"
+      className="fixed inset-0 bg-black/75 backdrop-blur-md z-[100] flex items-center justify-center p-0 md:p-4"
     >
       <motion.div 
         initial={{ opacity: 0, scale: 0.98, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.98, y: 15 }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className="bg-white rounded-[24px] border border-gray-100 shadow-2xl w-full max-w-4xl relative overflow-hidden my-8"
+        className="bg-white md:rounded-[24px] border-x-0 md:border border-gray-100 shadow-2xl w-full max-w-4xl relative min-h-[100dvh] md:min-h-0 md:max-h-[90vh] flex flex-col my-0 md:my-8"
       >
-        
+        <div className="flex-1 overflow-y-auto">
         {/* VIP Highlighting Band */}
         {property.isBoosted && (
           <div className="bg-gradient-to-r from-yellow-500 via-amber-600 to-yellow-400 text-white text-center py-2 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5">
@@ -290,7 +290,7 @@ export default function PropertyDetailsModal({
           </div>
 
         </div>
-
+        </div>
       </motion.div>
     </motion.div>
   );
